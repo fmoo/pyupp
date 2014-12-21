@@ -22,6 +22,8 @@ http://answers.unity3d.com/questions/147431/how-can-i-view-a-webplayer-playerpre
     0xFE is a 32Bit integer (4-byte little endian).
     The header consists of the word "UnityPrf" (8 bytes) followed by (i guess) two version integers: 0x10000 and 0x100000
 """
+from __future__ import print_function
+
 import binascii
 import argparse
 import six
@@ -64,7 +66,7 @@ def _pack_float(f):
 
 def loads(data):
     header = data[:16]
-    assert header.startswith('UnityPrf')
+    assert header.startswith(b'UnityPrf')
     version = header[8:]
     _debug("version", version)
 
@@ -141,4 +143,4 @@ if __name__ == '__main__':
     ns = ap.parse_args()
     with open(ns.file, mode='rb') as f:
         dat = loads(f.read())
-        print dat
+        print(dat)
