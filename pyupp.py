@@ -23,6 +23,7 @@ http://answers.unity3d.com/questions/147431/how-can-i-view-a-webplayer-playerpre
     The header consists of the word "UnityPrf" (8 bytes) followed by (i guess) two version integers: 0x10000 and 0x100000
 """
 from __future__ import print_function
+from io import BytesIO
 
 import binascii
 import argparse
@@ -33,43 +34,48 @@ import logging
 
 def loads(data):
     """Parses `data` and returns a dictionary for the upp data"""
-    header = data[:16]
+    reader = BytesIO(data)
+    header = reader.read(16)
     assert header.startswith(b'UnityPrf')
     version = header[8:]
     _debug("version", version)
 
     result = {}
-    body = data[16:]
-    while len(body):
+    while True:
         #_debug("namelen", body[0])
-        namelen, body = body[0], body[1:]
+        namelen = reader.read(1)
+
+        # EOF
+        if namelen == b'':
+            break
+
         namelen = ord(namelen)
-        name, body = body[:namelen], body[namelen:]
+        name = reader.read(namelen).decode('UTF-8')
         #_debug("name", name, True)
         assert name not in result
-        valuetype, body = body[0], body[1:]
+        valuetype = reader.read(1)
         #_debug("valuetype", valuetype)
-        if valuetype == '\xfe':
+        if valuetype == b'\xfe':
             # 32-bit LE int
-            packed, body = body[:4], body[4:]
+            packed = reader.read(4)
             #_debug(name, packed)
             result[name] = _unpack_int(packed)
-        elif valuetype == '\xfd':
+        elif valuetype == b'\xfd':
             # 32-bit LE float
-            packed, body = body[:4], body[4:]
+            packed = reader.read(4)
             result[name] = _unpack_float(packed)
-        elif valuetype == '\x80':
+        elif valuetype == b'\x80':
             # long string
-            packedlen, body = body[:4], body[4:]
+            packedlen = reader.read(4)
             strlen = _unpack_int(packedlen)
-            value, body = body[:strlen], body[strlen:]
+            value = reader.read(strlen)
             #_debug(name, value, True)
             result[name] = value
         else:
             # short string?
             strlen = ord(valuetype)
-            assert strlen <= 0x7f
-            value, body = body[:strlen], body[strlen:]
+            assert strlen <= 0x7f, repr((strlen, 0x7f))
+            value = reader.read(strlen)
             #_debug(name, value, True)
             result[name] = value
 
@@ -78,33 +84,36 @@ def loads(data):
 
 def dumps(data):
     """Serialized dictionary `data` to binary upp data"""
-    VERSION = '\x00\x00\x01\x00\x00\x00\x10\x00'
-    result = 'UnityPrf' + VERSION
+    writer = BytesIO()
+
+    VERSION = b'\x00\x00\x01\x00\x00\x00\x10\x00'
+    writer.write('UnityPrf')
+    writer.write(VERSION)
     for k, v in data.items():
         assert len(k) <= 255
-        result += chr(len(k))
-        result += k
+        writer.write(chr(len(k)))
+        writer.write(k.encode('UTF-8'))
 
         if isinstance(v, six.string_types):
             if len(v) <= 0x7f:
-                result += chr(len(v))
-                result += v
+                writer.write(chr(len(v)))
+                writer.write(v)
             else:
-                result += '\x80'
-                result += _pack_int(len(v))
-                result += v
+                writer.write(b'\x80')
+                writer.write(_pack_int(len(v)))
+                writer.write(v)
 
         elif isinstance(v, six.integer_types):
-            result += '\xfe'
-            result += _pack_int(v)
+            writer.write(b'\xfe')
+            writer.write(_pack_int(v))
 
         elif isinstance(v, float):
-            result += '\xfd'
-            result += _pack_float(v)
+            writer.write(b'\xfd')
+            writer.write(_pack_float(v))
 
         else:
             assert False
-    return result
+    return writer.getvalue()
 
 
 def _debug(msg, dat, is_string = False):
