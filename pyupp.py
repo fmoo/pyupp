@@ -88,16 +88,16 @@ def dumps(data):
     writer = BytesIO()
 
     VERSION = b'\x00\x00\x01\x00\x00\x00\x10\x00'
-    writer.write('UnityPrf')
+    writer.write('UnityPrf'.encode('UTF-8'))
     writer.write(VERSION)
     for k, v in data.items():
         assert len(k) <= 255
-        writer.write(chr(len(k)))
+        writer.write(_pack_ubyte(len(k)))
         writer.write(k.encode('UTF-8'))
 
-        if isinstance(v, six.string_types):
+        if isinstance(v, six.string_types) or isinstance(v, bytes):
             if len(v) <= 0x7f:
-                writer.write(chr(len(v)))
+                writer.write(_pack_ubyte(len(v)))
                 writer.write(v)
             else:
                 writer.write(b'\x80')
@@ -144,6 +144,13 @@ def _pack_int(n):
     assert n >= -0x7fffffff
     assert isinstance(n, six.integer_types)
     return struct.pack('<i', n)
+
+
+def _pack_ubyte(n):
+    assert n <= 0xff
+    assert n >= 0
+    assert isinstance(n, six.integer_types)
+    return struct.pack('<B', n)
 
 
 def _pack_float(f):
