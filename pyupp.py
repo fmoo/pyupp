@@ -113,7 +113,7 @@ def dumps(data):
             writer.write(_pack_float(v))
 
         else:
-            assert False
+            assert False, repr(('Unknown type of data:', v))
     return writer.getvalue()
 
 
