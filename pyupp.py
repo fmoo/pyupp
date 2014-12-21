@@ -31,40 +31,8 @@ import struct
 import logging
 
 
-def _debug(msg, dat, is_string = False):
-    return
-    if not is_string:
-        logging.debug("%s (%d bytes) => %s",
-            msg, len(dat), binascii.hexlify(dat))
-    else:
-        logging.debug("%s (%d bytes) => %s", msg,
-            len(dat), repr(dat))
-
-
-def _unpack_int(dat):
-    assert len(dat) == 4
-    result, = struct.unpack('<i', dat)
-    return result
-
-
-def _unpack_float(dat):
-    assert len(dat) == 4
-    result, = struct.unpack('<f', dat)
-    return result
-
-
-def _pack_int(n):
-    assert n < 0x7fffffff
-    assert n >= -0x7fffffff
-    assert isinstance(n, six.integer_types)
-    return struct.pack('<i', n)
-
-
-def _pack_float(f):
-    assert isinstance(f, float)
-    return struct.pack('<f', f)
-
 def loads(data):
+    """Parses `data` and returns a dictionary for the upp data"""
     header = data[:16]
     assert header.startswith(b'UnityPrf')
     version = header[8:]
@@ -107,7 +75,9 @@ def loads(data):
 
     return result
 
+
 def dumps(data):
+    """Serialized dictionary `data` to binary upp data"""
     VERSION = '\x00\x00\x01\x00\x00\x00\x10\x00'
     result = 'UnityPrf' + VERSION
     for k, v in data.items():
@@ -135,6 +105,40 @@ def dumps(data):
         else:
             assert False
     return result
+
+
+def _debug(msg, dat, is_string = False):
+    return
+    if not is_string:
+        logging.debug("%s (%d bytes) => %s",
+            msg, len(dat), binascii.hexlify(dat))
+    else:
+        logging.debug("%s (%d bytes) => %s", msg,
+            len(dat), repr(dat))
+
+
+def _unpack_int(dat):
+    assert len(dat) == 4
+    result, = struct.unpack('<i', dat)
+    return result
+
+
+def _unpack_float(dat):
+    assert len(dat) == 4
+    result, = struct.unpack('<f', dat)
+    return result
+
+
+def _pack_int(n):
+    assert n < 0x7fffffff
+    assert n >= -0x7fffffff
+    assert isinstance(n, six.integer_types)
+    return struct.pack('<i', n)
+
+
+def _pack_float(f):
+    assert isinstance(f, float)
+    return struct.pack('<f', f)
 
 
 if __name__ == '__main__':
