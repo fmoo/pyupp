@@ -153,7 +153,11 @@ def _pack_float(f):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('file')
+    ap.add_argument('--check', action='store_true')
     ns = ap.parse_args()
     with open(ns.file, mode='rb') as f:
         dat = loads(f.read())
         print(dat)
+
+    if ns.check:
+        dumps(dat)
