@@ -17,12 +17,12 @@ setup(
         'Programming Language :: Python :: 2 :: Only',
         'Topic :: Software Development :: Libraries',
     ],
-    keywords='whois, python',
+    keywords='unity',
     author='Peter Ruibal',
     author_email='ruibalp@gmail.com',
     url='https://github.com/fmoo/pyupp',
     license='Apache',
-    modules=[
+    py_modules=[
         'pyupp',
     ],
 )
