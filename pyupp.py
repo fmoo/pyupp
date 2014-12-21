@@ -140,7 +140,7 @@ def _unpack_float(dat):
 
 
 def _pack_int(n):
-    assert n < 0x7fffffff
+    assert n <= 0x7fffffff
     assert n >= -0x7fffffff
     assert isinstance(n, six.integer_types)
     return struct.pack('<i', n)
