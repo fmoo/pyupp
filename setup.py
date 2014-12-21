@@ -25,4 +25,7 @@ setup(
     py_modules=[
         'pyupp',
     ],
+    requires=[
+        'six',
+    ],
 )
