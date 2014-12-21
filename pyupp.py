@@ -27,9 +27,10 @@ from io import BytesIO
 
 import binascii
 import argparse
+import logging
 import six
 import struct
-import logging
+import sys
 
 
 def loads(data):
@@ -151,6 +152,7 @@ def _pack_float(f):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
     ap = argparse.ArgumentParser()
     ap.add_argument('file')
     ap.add_argument('--check', action='store_true')
