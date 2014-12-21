@@ -43,8 +43,8 @@ def loads(data):
 
     result = {}
     while True:
-        #_debug("namelen", body[0])
         namelen = reader.read(1)
+        _debug("namelen", namelen)
 
         # EOF
         if namelen == b'':
@@ -52,14 +52,14 @@ def loads(data):
 
         namelen = ord(namelen)
         name = reader.read(namelen).decode('UTF-8')
-        #_debug("name", name, True)
+        _debug("name", name, True)
         assert name not in result
         valuetype = reader.read(1)
-        #_debug("valuetype", valuetype)
+        _debug("valuetype", valuetype)
         if valuetype == b'\xfe':
             # 32-bit LE int
             packed = reader.read(4)
-            #_debug(name, packed)
+            _debug(name, packed)
             result[name] = _unpack_int(packed)
         elif valuetype == b'\xfd':
             # 32-bit LE float
@@ -70,14 +70,14 @@ def loads(data):
             packedlen = reader.read(4)
             strlen = _unpack_int(packedlen)
             value = reader.read(strlen)
-            #_debug(name, value, True)
+            _debug(name, value, True)
             result[name] = value
         else:
             # short string?
             strlen = ord(valuetype)
             assert strlen <= 0x7f, repr((strlen, 0x7f))
             value = reader.read(strlen)
-            #_debug(name, value, True)
+            _debug(name, value, True)
             result[name] = value
 
     return result
